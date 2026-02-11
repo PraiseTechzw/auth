@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Universal OTP client for React, Expo, Web, and Node",
   "main": "src/index.js",
-  "types": "",
+  "types": "src/index.d.ts",
   "sideEffects": false,
   "license": "UNLICENSED",
   "private": false,
