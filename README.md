@@ -1,35 +1,45 @@
-# Auth: OTP Verification Backend and Client
+# Auth
 
-Production-ready OTP verification with:
+Production-ready One-Time Password verification with:
 - Node.js/Express backend in server
 - Universal client in packages/otp-client
 - SMS POP integration for OTP delivery
 - Dry-run testing mode toggleable at runtime
 
-## Prerequisites
-- Node.js 18+ and npm
-- Optional: Ngrok for device connectivity during development
-- SMS POP account with approved Sender ID and API token
+## Table of Contents
+- Overview
+- Requirements
+- Quick Start
+- Configuration
+- API
+- Client Usage
+- Project Structure
+- Development
+- Testing
+- Release & Versioning
+- Troubleshooting
+- Contributing
+- License
 
-## Installation
-- Backend
+## Overview
+- Provides endpoints to request and verify OTP codes.
+- Normalizes Zimbabwe mobile numbers (0786… → 263786…).
+- Enforces cooldowns, rate limits, and max verify attempts.
+- Dry-run mode returns debugOtp for local testing without SMS charges.
+
+## Requirements
+- Node.js 18+ and npm
+- SMS POP account with approved Sender ID and API token (for non-dry-run)
+- Optional: Ngrok for device connectivity during development
+
+## Quick Start
+- Backend:
   - Create server/.env based on [server/.env.example](file:///c:/Users/Prais/projects/auth/server/.env.example)
-    - PORT=3010
-    - CORS_ORIGIN=*
-    - SMSPOP_TOKEN=<your_token>
-    - SMSPOP_SENDER_ID=<approved_sender_id>
-    - OTP_PEPPER=<random_secret_string>
-    - DRY_RUN_SMS=true
   - Install and run:
     - cd server
     - npm install
     - npm start
-- Client (optional)
-  - cd packages/otp-client
-  - npm install
-
-## Quick Usage
-- Health check:
+- Health:
 
 ```bash
 curl http://localhost:3010/health
@@ -51,7 +61,7 @@ curl -X POST http://localhost:3010/auth/verify-otp \
   -d '{"phone":"0786123456","otp":"123456"}'
 ```
 
-- Toggle dry-run at runtime:
+- Toggle dry-run:
 
 ```bash
 curl -X POST http://localhost:3010/admin/dry-run \
@@ -60,41 +70,62 @@ curl -X POST http://localhost:3010/admin/dry-run \
 ```
 
 ## Configuration
-- Environment variables defined in [config.js](file:///c:/Users/Prais/projects/auth/server/src/config.js)
-  - smsToken from SMSPOP_TOKEN
-  - smsSenderId from SMSPOP_SENDER_ID
-  - otpPepper from OTP_PEPPER
-  - dryRunSms from DRY_RUN_SMS
+- Environment variables in [config.js](file:///c:/Users/Prais/projects/auth/server/src/config.js):
+  - SMSPOP_TOKEN, SMSPOP_SENDER_ID, OTP_PEPPER, DRY_RUN_SMS
   - resendCooldownMs, otpExpireMs, rate limits
-- Admin toggle endpoint implemented in [admin.js](file:///c:/Users/Prais/projects/auth/server/src/routes/admin.js)
+- Admin toggle implemented in [admin.js](file:///c:/Users/Prais/projects/auth/server/src/routes/admin.js)
 
-## API Reference
-- Full details in docs/API.md
+Example server/.env:
+
+```
+PORT=3010
+CORS_ORIGIN=*
+SMSPOP_TOKEN=your-token
+SMSPOP_SENDER_ID=YourSender
+OTP_PEPPER=your-secret-pepper
+DRY_RUN_SMS=true
+```
+
+## API
+- Full details: docs/API.md
 - Key server files:
-  - App: [app.js](file:///c:/Users/Prais/projects/auth/server/src/app.js)
-  - Auth routes: [auth.js](file:///c:/Users/Prais/projects/auth/server/src/routes/auth.js)
-  - SMS service: [sms.js](file:///c:/Users/Prais/projects/auth/server/src/services/sms.js)
-  - Phone normalization: [phone.js](file:///c:/Users/Prais/projects/auth/server/src/utils/phone.js)
-  - OTP utilities: [otp.js](file:///c:/Users/Prais/projects/auth/server/src/utils/otp.js)
-  - In-memory store: [memoryStore.js](file:///c:/Users/Prais/projects/auth/server/src/store/memoryStore.js)
+  - [app.js](file:///c:/Users/Prais/projects/auth/server/src/app.js)
+  - [auth.js](file:///c:/Users/Prais/projects/auth/server/src/routes/auth.js)
+  - [sms.js](file:///c:/Users/Prais/projects/auth/server/src/services/sms.js)
+  - [phone.js](file:///c:/Users/Prais/projects/auth/server/src/utils/phone.js)
+  - [otp.js](file:///c:/Users/Prais/projects/auth/server/src/utils/otp.js)
+  - [memoryStore.js](file:///c:/Users/Prais/projects/auth/server/src/store/memoryStore.js)
+
+## Client Usage
+- Package: packages/otp-client
+- Functions:
+  - health(), requestOtp(phone), verifyOtp(phone, otp)
+- Types: [index.d.ts](file:///c:/Users/Prais/projects/auth/packages/otp-client/src/index.d.ts)
+
+## Project Structure
+- server/src organizes concerns with routes, services, utils, and store.
+- Clean architecture documentation lives in docs/ARCHITECTURE.md.
+
+## Development
+- Lint: npm run lint (server)
+- Test: npm test (server)
+- Pre-commit runs lint-staged and tests if enabled in your environment.
 
 ## Testing
-- Run tests:
-  - cd server
+- From server:
   - npm test
-- Example tests in [auth.test.js](file:///c:/Users/Prais/projects/auth/server/test/auth.test.js)
+- Example tests: [auth.test.js](file:///c:/Users/Prais/projects/auth/server/test/auth.test.js)
 
-## Architecture
-- See docs/ARCHITECTURE.md for data flow, modules, and design decisions.
-
-## Deployment
-- See docs/DEPLOYMENT.md for procedures in development and production.
+## Release & Versioning
+- Semantic-version tags (e.g., v1.2.3)
+- Automated release workflow generates notes and artifacts
+- Changelog: [CHANGELOG.md](file:///c:/Users/Prais/projects/auth/CHANGELOG.md)
 
 ## Troubleshooting
-- See docs/TROUBLESHOOTING.md for common issues and fixes.
+- See docs/TROUBLESHOOTING.md
 
 ## Contributing
-- Please read [CONTRIBUTING.md](file:///c:/Users/Prais/projects/auth/CONTRIBUTING.md) for guidelines on opening issues and PRs, coding standards, and testing.
+- See [CONTRIBUTING.md](file:///c:/Users/Prais/projects/auth/CONTRIBUTING.md)
 
 ## License
-- MIT (or project-specific). Update as appropriate.
+- MIT or project-specific (update as needed)
