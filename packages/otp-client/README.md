@@ -1,9 +1,9 @@
-# @otp/otp-client
+# @traisetech/otp-client
 
 Universal OTP client usable in React, Expo, Web, and Node.
 
 ## Install
-- `npm install @otp/otp-client`
+- `npm install @traisetech/otp-client`
 
 ## Configure
 - Option A: Programmatic
@@ -15,7 +15,7 @@ Universal OTP client usable in React, Expo, Web, and Node.
 
 ## Usage
 ```js
-import { setBaseUrl, requestOtp, verifyOtp, health } from '@otp/otp-client'
+import { setBaseUrl, requestOtp, verifyOtp, health } from '@traisetech/otp-client'
 setBaseUrl('https://your-backend.ngrok-free.dev')
 await health()
 const req = await requestOtp('0786123456')
@@ -24,7 +24,7 @@ const ok = await verifyOtp('0786123456', '123456')
 
 ### React / Expo
 ```js
-import { attachStorage, setBaseUrl, requestOtp, verifyOtp } from '@otp/otp-client'
+import { attachStorage, setBaseUrl, requestOtp, verifyOtp } from '@traisetech/otp-client'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 attachStorage(AsyncStorage)
 setBaseUrl('https://your-backend.ngrok-free.dev')
@@ -32,7 +32,7 @@ setBaseUrl('https://your-backend.ngrok-free.dev')
 
 ### Node
 ```js
-const { requestOtp, verifyOtp } = require('@otp/otp-client')
+const { requestOtp, verifyOtp } = require('@traisetech/otp-client')
 process.env.OTP_BASE_URL = 'https://your-backend.ngrok-free.dev'
 ```
 
