@@ -41,6 +41,29 @@ const ok = await verifyOtp('0786123456', '123456') // { success: true } or error
 - Fetch options:
   - Optional `{ timeoutMs?: number }` per call to override default timeout.
 
+## Zimbabwe SMS POP Backend Setup
+- Goal: Enable OTP SMS delivery for Zimbabwe numbers using SMS POP.
+- Prerequisites:
+  - SMS POP account with an approved Sender ID and API token
+  - Backend deployed or running locally
+- Environment variables (server/.env):
+```
+PORT=3010
+CORS_ORIGIN=*
+SMSPOP_TOKEN=<your_sms_pop_api_token>
+SMSPOP_SENDER_ID=<approved_sender_id>    # e.g., SMSPoP
+OTP_PEPPER=<random_secret_string>        # used for hashing OTP
+DRY_RUN_SMS=false                        # set true for local testing without SMS
+```
+- Start backend:
+  - `cd server && npm install && npm start`
+- Phone normalization rules (Zimbabwe):
+  - Input like `0786123456` becomes `263786123456`
+  - Only mobile numbers starting with `7` are accepted; numeric only
+- Local testing:
+  - Set `DRY_RUN_SMS=true` and use `debugOtp` returned by `/auth/request-otp`
+  - Toggle at runtime: `POST /admin/dry-run {"enabled": true}`
+
 ## API Reference
 - `setBaseUrl(url: string): void`
   - Sets the base URL used for requests.
