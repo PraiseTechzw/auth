@@ -1,3 +1,5 @@
+// Configuration and runtime flags for the OTP backend.
+// Values are sourced from environment variables with sensible defaults.
 const dotenv = require('dotenv')
 dotenv.config()
 
@@ -18,6 +20,7 @@ const config = {
 }
 
 let overrideDryRun = null
+// Allows toggling dry-run mode at runtime via admin route.
 function setDryRun(flag) {
   overrideDryRun = !!flag
 }

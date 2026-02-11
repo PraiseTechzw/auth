@@ -1,3 +1,4 @@
+// Auth routes: request-otp and verify-otp with rate limits and cooldowns.
 const express = require('express')
 const { normalizeZimbabwePhone } = require('../utils/phone')
 const { generateOtp6, hashOtp } = require('../utils/otp')
