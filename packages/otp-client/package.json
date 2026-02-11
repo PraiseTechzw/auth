@@ -1,0 +1,22 @@
+{
+  "name": "@otp/otp-client",
+  "version": "0.1.0",
+  "description": "Universal OTP client for React, Expo, Web, and Node",
+  "main": "src/index.js",
+  "types": "",
+  "sideEffects": false,
+  "license": "UNLICENSED",
+  "private": false,
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "build": "echo \"No build step\"",
+    "test": "node -e \"console.log('ok')\""
+  },
+  "peerDependencies": {},
+  "dependencies": {},
+  "engines": {
+    "node": ">=18"
+  }
+}
