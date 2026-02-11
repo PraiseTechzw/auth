@@ -32,16 +32,13 @@ export default function OtpScreen({ phone, cooldownMs, expireMs, onVerified, onB
   const submit = async () => {
     setLoading(true)
     setError('')
-    try {
-      const r = await verifyOtp(phone, otp)
-      if (r && r.success) {
-        onVerified()
-      } else {
-        setError(r && r.error ? String(r.error) : 'Invalid code')
-      }
-    } catch (e) {
-      setError(e && e.message ? e.message : 'Verification failed')
-    } finally {
+    const r = await verifyOtp(phone, otp)
+    if (r && r.success) {
+      onVerified()
+    } else {
+      setError(r && r.error ? String(r.error) : 'Verification failed')
+    }
+    {
       setLoading(false)
       setOtp('')
     }
@@ -51,16 +48,13 @@ export default function OtpScreen({ phone, cooldownMs, expireMs, onVerified, onB
     if (now < resendAt) return
     setLoading(true)
     setError('')
-    try {
-      const r = await requestOtp(phone)
-      if (r && r.success) {
-        setResendAt(Date.now() + (r.cooldownMs || cooldownMs))
-      } else {
-        setError(r && r.error ? String(r.error) : 'Resend failed')
-      }
-    } catch (e) {
-      setError(e && e.message ? e.message : 'Resend failed')
-    } finally {
+    const r = await requestOtp(phone)
+    if (r && r.success) {
+      setResendAt(Date.now() + (r.cooldownMs || cooldownMs))
+    } else {
+      setError(r && r.error ? String(r.error) : 'Resend failed')
+    }
+    {
       setLoading(false)
     }
   }

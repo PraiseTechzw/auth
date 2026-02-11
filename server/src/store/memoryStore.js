@@ -72,4 +72,4 @@ function verifyOtp(phone, otpHash) {
   return { ok: false, reason: 'mismatch', remaining }
 }
 
-module.exports = { setOtp, canResend, rateLimited, get, verifyOtp }
+module.exports = { setOtp, canResend, rateLimited, get, verifyOtp, resendRemainingMs }

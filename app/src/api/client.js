@@ -43,3 +43,17 @@ export async function verifyOtp(phone, otp) {
 }
 
 export default { requestOtp, verifyOtp }
+
+export async function health() {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 5000)
+  const res = await fetch(baseURL + '/health', {
+    method: 'GET',
+    signal: controller.signal
+  })
+  clearTimeout(timer)
+  let data = null
+  try { data = await res.json() } catch (_e) {}
+  if (res.ok && data && data.ok) return { ok: true }
+  return { ok: false, error: 'health_failed' }
+}
