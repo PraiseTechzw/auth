@@ -1,0 +1,148 @@
+openapi: 3.0.3
+info:
+  title: OTP Backend API
+  version: 1.0.0
+  description: Express backend for OTP verification with SMS POP integration
+servers:
+  - url: http://localhost:3010
+  - url: https://nonexplosively-unatrophied-josette.ngrok-free.dev
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+  /auth/request-otp:
+    post:
+      summary: Request OTP code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone:
+                  type: string
+                  example: "0786123456"
+      responses:
+        '200':
+          description: OTP requested
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  phone: { type: string, example: "263786123456" }
+                  expireMs: { type: integer, example: 300000 }
+                  cooldownMs: { type: integer, example: 45000 }
+                  delivery:
+                    type: object
+                    properties:
+                      transport:
+                        type: string
+                        enum: [smspop, dry_run]
+                  debugOtp:
+                    type: string
+                    example: "123456"
+        '429':
+          description: Cooldown or rate limited
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: false }
+                  error: { type: string, example: "cooldown" }
+        '422':
+          description: Invalid Sender ID or validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: false }
+                  error: { type: string, example: "invalid_sender_id" }
+                  detail: { type: object }
+        '401':
+          description: Unauthorized token
+        '402':
+          description: Insufficient credit
+        '403':
+          description: Forbidden or inactive account
+        '502':
+          description: Provider bad response
+        '503':
+          description: Provider/network error
+  /auth/verify-otp:
+    post:
+      summary: Verify OTP code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone: { type: string, example: "0786123456" }
+                otp: { type: string, example: "123456" }
+      responses:
+        '200':
+          description: Verified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+        '404':
+          description: No OTP found for phone
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: false }
+                  error: { type: string, example: "not_found" }
+        '400':
+          description: Mismatch or expired
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: false }
+                  error: { type: string, example: "mismatch" }
+  /admin/dry-run:
+    post:
+      summary: Toggle dry-run testing mode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+                  example: true
+      responses:
+        '200':
+          description: Toggled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  dryRun: { type: boolean, example: true }
