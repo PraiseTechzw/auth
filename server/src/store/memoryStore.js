@@ -34,6 +34,13 @@ function canResend(phone) {
   return now() >= (r.resendAvailableAt || 0)
 }
 
+function resendRemainingMs(phone) {
+  const r = store.get(phone)
+  if (!r) return 0
+  const rem = (r.resendAvailableAt || 0) - now()
+  return rem > 0 ? rem : 0
+}
+
 function rateLimited(phone) {
   const r = store.get(phone)
   if (!r) return false

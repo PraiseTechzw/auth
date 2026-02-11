@@ -17,6 +17,13 @@ export default function OtpScreen({ phone, cooldownMs, expireMs, onVerified, onB
   }, [])
 
   useEffect(() => {
+    const t = setTimeout(() => {
+      if (inputRef.current) inputRef.current.focus()
+    }, 100)
+    return () => clearTimeout(t)
+  }, [])
+
+  useEffect(() => {
     if (otp.length === 6) {
       submit()
     }
@@ -30,10 +37,10 @@ export default function OtpScreen({ phone, cooldownMs, expireMs, onVerified, onB
       if (r && r.success) {
         onVerified()
       } else {
-        setError('Invalid code')
+        setError(r && r.error ? String(r.error) : 'Invalid code')
       }
     } catch (e) {
-      setError('Verification failed')
+      setError(e && e.message ? e.message : 'Verification failed')
     } finally {
       setLoading(false)
       setOtp('')
@@ -49,10 +56,10 @@ export default function OtpScreen({ phone, cooldownMs, expireMs, onVerified, onB
       if (r && r.success) {
         setResendAt(Date.now() + (r.cooldownMs || cooldownMs))
       } else {
-        setError('Resend failed')
+        setError(r && r.error ? String(r.error) : 'Resend failed')
       }
     } catch (e) {
-      setError('Resend failed')
+      setError(e && e.message ? e.message : 'Resend failed')
     } finally {
       setLoading(false)
     }

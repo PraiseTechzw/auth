@@ -11,27 +11,35 @@ function resolveBaseUrl() {
 const baseURL = resolveBaseUrl()
 
 export async function requestOtp(phone) {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 10000)
   const res = await fetch(baseURL + '/auth/request-otp', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ phone })
+    body: JSON.stringify({ phone }),
+    signal: controller.signal
   })
-  if (!res.ok) {
-    throw new Error('request_otp_failed')
-  }
-  return res.json()
+  clearTimeout(timer)
+  let data = null
+  try { data = await res.json() } catch (_e) {}
+  if (res.ok) return data
+  return data || { success: false, error: 'request_otp_failed' }
 }
 
 export async function verifyOtp(phone, otp) {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 10000)
   const res = await fetch(baseURL + '/auth/verify-otp', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ phone, otp })
+    body: JSON.stringify({ phone, otp }),
+    signal: controller.signal
   })
-  if (!res.ok) {
-    throw new Error('verify_otp_failed')
-  }
-  return res.json()
+  clearTimeout(timer)
+  let data = null
+  try { data = await res.json() } catch (_e) {}
+  if (res.ok) return data
+  return data || { success: false, error: 'verify_otp_failed' }
 }
 
 export default { requestOtp, verifyOtp }

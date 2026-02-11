@@ -27,6 +27,7 @@ async function sendOtpSMS(phone, otp) {
     })
     const data = res.data
     if (data && data.success && data.summary && data.summary.sent > 0) {
+      console.log('smspop success', { sent: data.summary.sent })
       return data
     }
     const e = new Error('SMSPOP unexpected response')
@@ -35,10 +36,12 @@ async function sendOtpSMS(phone, otp) {
   } catch (err) {
     if (err.response) {
       const s = err.response.status
+      console.log('smspop error status', { status: s })
       const e = new Error('SMSPOP error ' + s)
       e.status = s
       throw e
     }
+    console.log('smspop network error')
     const e = new Error('SMSPOP network error')
     e.status = 503
     throw e
