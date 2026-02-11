@@ -1,9 +1,9 @@
 const axios = require('axios')
-const { config } = require('../config')
+const { config, isDryRun } = require('../config')
 
 async function sendOtpSMS(phone, otp) {
-  if (config.dryRunSms) {
-    return { success: true, summary: { sent: 1 } }
+  if (isDryRun()) {
+    return { success: true, transport: 'dry_run', summary: { sent: 1 } }
   }
   if (!config.smsToken) {
     const e = new Error('SMS token missing')
@@ -27,8 +27,8 @@ async function sendOtpSMS(phone, otp) {
     })
     const data = res.data
     if (data && data.success && data.summary && data.summary.sent > 0) {
-      console.log('smspop success', { sent: data.summary.sent })
-      return data
+      console.log('smspop success', { sent: data.summary.sent, contacts: data.contacts ? data.contacts.length : 0 })
+      return { success: true, transport: 'smspop', summary: data.summary, contacts: data.contacts, raw: data }
     }
     const e = new Error('SMSPOP unexpected response')
     e.status = 502

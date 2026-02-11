@@ -3,7 +3,7 @@ const { normalizeZimbabwePhone } = require('../utils/phone')
 const { generateOtp6, hashOtp } = require('../utils/otp')
 const { setOtp, canResend, rateLimited, verifyOtp, resendRemainingMs } = require('../store/memoryStore')
 const { sendOtpSMS } = require('../services/sms')
-const { config } = require('../config')
+const { config, isDryRun } = require('../config')
 
 const router = express.Router()
 
@@ -25,10 +25,10 @@ router.post('/request-otp', async (req, res) => {
     const otp = generateOtp6()
     const otpHash = hashOtp(otp, config.otpPepper)
     setOtp(normalized, otpHash)
-    await sendOtpSMS(normalized, otp)
-    console.log('request-otp sent', { normalized })
-    const payload = { success: true, phone: normalized, expireMs: config.otpExpireMs, cooldownMs: config.resendCooldownMs }
-    if (config.dryRunSms) payload.debugOtp = otp
+    const delivery = await sendOtpSMS(normalized, otp)
+    console.log('request-otp sent', { normalized, transport: delivery.transport, summary: delivery.summary })
+    const payload = { success: true, phone: normalized, expireMs: config.otpExpireMs, cooldownMs: config.resendCooldownMs, delivery }
+    if (isDryRun()) payload.debugOtp = otp
     return res.json(payload)
   } catch (e) {
     const status = e.status || 400

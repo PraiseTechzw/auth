@@ -2,6 +2,7 @@ const express = require('express')
 const cors = require('cors')
 const { config } = require('./config')
 const authRoutes = require('./routes/auth')
+const adminRoutes = require('./routes/admin')
 
 const app = express()
 app.use(cors({ origin: config.corsOrigin }))
@@ -12,6 +13,7 @@ app.get('/health', (req, res) => {
 })
 
 app.use('/auth', authRoutes)
+app.use('/admin', adminRoutes)
 
 app.use((err, req, res, _next) => {
   res.status(500).json({ success: false, error: 'server_error' })

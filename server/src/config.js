@@ -17,4 +17,12 @@ const config = {
   corsOrigin: env.CORS_ORIGIN || '*'
 }
 
-module.exports = { config }
+let overrideDryRun = null
+function setDryRun(flag) {
+  overrideDryRun = !!flag
+}
+function isDryRun() {
+  return overrideDryRun !== null ? overrideDryRun : config.dryRunSms
+}
+
+module.exports = { config, setDryRun, isDryRun }
