@@ -56,4 +56,17 @@ jobs:
           name: Release ${{ steps.release.outputs.tag_name }}
           body: ${{ steps.release.outputs.release_notes }}
 
-      # npm publish intentionally disabled for private package
+      - name: Publish otp-client to npm
+        if: steps.release.outputs.release_created == 'true'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "${NODE_AUTH_TOKEN}" ]; then
+            echo "NPM_TOKEN not set; skipping npm publish."
+            exit 0
+          fi
+          cd packages/otp-client
+          npm ci
+          TAG="latest"
+          if [[ "${{ steps.release.outputs.tag_name }}" == *"-beta"* ]]; then TAG="beta"; fi
+          npm publish --tag "$TAG" --access public

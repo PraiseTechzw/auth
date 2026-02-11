@@ -2,12 +2,8 @@
 
 Universal OTP client usable in React, Expo, Web, and Node.
 
-## Install (Private)
-- Monorepo workspace usage (recommended):
-  - Add `"@otp/otp-client": "workspace:*"` to your app's package.json
-- Git URL (private repo access required):
-  - `npm install git+ssh://github.com/PraiseTechzw/auth.git#main --workspace=packages/otp-client`
-  - Then depend on it via `file:` or workspace reference
+## Install
+- `npm install @otp/otp-client`
 
 ## Configure
 - Option A: Programmatic
@@ -54,5 +50,4 @@ process.env.OTP_BASE_URL = 'https://your-backend.ngrok-free.dev'
 - No dependencies; tree-shakeable
 
 ## Publish
-- This package is private; npm publishing is disabled.
-- Use workspace or git URL installation methods above.
+- Public npm package. Publishing is handled via CI on tagged releases.

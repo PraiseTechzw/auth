@@ -6,7 +6,7 @@
   "types": "src/index.d.ts",
   "sideEffects": false,
   "license": "MIT",
-  "private": true,
+  "private": false,
   "files": [
     "src"
   ],
@@ -18,5 +18,8 @@
   "dependencies": {},
   "engines": {
     "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
