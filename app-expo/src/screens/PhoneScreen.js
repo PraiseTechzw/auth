@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { View, Text, TextInput, Pressable, ActivityIndicator } from 'react-native'
-import { requestOtp, health } from '../api/client'
+import { requestOtp, health, setApiUrl, getApiUrl } from '../api/client'
 import Constants from 'expo-constants'
 
 export default function PhoneScreen({ onRequested }) {
@@ -13,6 +13,7 @@ export default function PhoneScreen({ onRequested }) {
   const [lastEvent, setLastEvent] = useState('')
   const [lastPayload, setLastPayload] = useState(null)
   const [lastTime, setLastTime] = useState(0)
+  const [backendUrlInput, setBackendUrlInput] = useState('')
   useEffect(() => {
     if (cooldownSec <= 0) return
     const id = setInterval(() => {
@@ -22,6 +23,8 @@ export default function PhoneScreen({ onRequested }) {
   }, [cooldownSec])
   useEffect(() => {
     (async () => {
+      const url = await getApiUrl()
+      setBackendUrlInput(url)
       const h = await health()
       setBackendStatus(h.ok ? 'connected' : 'offline')
       setLastEvent('health')
@@ -55,7 +58,18 @@ export default function PhoneScreen({ onRequested }) {
   return (
     <View style={{ flex: 1, padding: 24, justifyContent: 'center' }}>
       <Text style={{ fontSize: 24, fontWeight: '600', marginBottom: 12 }}>Verify phone</Text>
-      {apiUrl ? <Text style={{ color: '#666', marginBottom: 8 }}>Backend: {apiUrl} ({backendStatus})</Text> : null}
+      <Text style={{ color: '#666', marginBottom: 8 }}>Backend: {backendUrlInput} ({backendStatus})</Text>
+      <TextInput
+        value={backendUrlInput}
+        onChangeText={setBackendUrlInput}
+        placeholder="Backend URL (e.g. http://192.168.1.50:3010)"
+        autoCapitalize="none"
+        autoCorrect={false}
+        style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 10, marginBottom: 12 }}
+      />
+      <Pressable onPress={async () => { await setApiUrl(backendUrlInput); const h = await health(); setBackendStatus(h.ok ? 'connected' : 'offline'); setLastEvent('health'); setLastPayload(h); setLastTime(Date.now()) }} style={{ marginBottom: 12, padding: 10, borderRadius: 8, borderWidth: 1, borderColor: '#ccc', alignItems: 'center' }}>
+        <Text style={{ color: '#333' }}>Save & Check</Text>
+      </Pressable>
       <Text style={{ color: '#666', marginBottom: 8 }}>Phone: {phone || '(empty)'}</Text>
       <TextInput
         value={phone}
@@ -72,7 +86,7 @@ export default function PhoneScreen({ onRequested }) {
       <Pressable onPress={submit} disabled={loading || cooldownSec > 0} style={{ backgroundColor: (loading || cooldownSec > 0) ? '#ccc' : '#0a84ff', padding: 14, borderRadius: 8, alignItems: 'center' }}>
         {loading ? <ActivityIndicator color="#fff" /> : <Text style={{ color: '#fff', fontWeight: '600' }}>{cooldownSec > 0 ? ('Try again in ' + cooldownSec + 's') : 'Send code'}</Text>}
       </Pressable>
-      <Pressable onPress={async () => { const h = await health(); setBackendStatus(h.ok ? 'connected' : 'offline'); setLastEvent('health'); setLastPayload(h); setLastTime(Date.now()) }} style={{ marginTop: 12, padding: 10, borderRadius: 8, borderWidth: 1, borderColor: '#ccc', alignItems: 'center' }}>
+      <Pressable onPress={async () => { const h = await health(); setBackendStatus(h.ok ? 'connected' : 'offline'); setLastEvent('health'); setLastPayload(h); setLastTime(Date.now()) }} style={{ padding: 10, borderRadius: 8, borderWidth: 1, borderColor: '#ccc', alignItems: 'center' }}>
         <Text style={{ color: '#333' }}>Check backend</Text>
       </Pressable>
       <View style={{ marginTop: 12, padding: 10, borderRadius: 8, backgroundColor: '#f7f7f7' }}>
