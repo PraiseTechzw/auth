@@ -22,7 +22,8 @@
   "license": "MIT",
   "private": false,
   "files": [
-    "src"
+    "src",
+    "LICENSE"
   ],
   "scripts": {
     "build": "echo \"No build step\"",
