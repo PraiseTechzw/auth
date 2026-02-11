@@ -1,0 +1,59 @@
+name: Release
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+      - name: Install root
+        run: npm install
+      - name: Lint server
+        run: npm run lint
+        working-directory: server
+      - name: Test server
+        run: npm test --silent
+        working-directory: server
+      - name: Test client
+        run: npm test --silent
+        working-directory: packages/otp-client
+
+  release:
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/release-please-action@v4
+        id: release
+        with:
+          config-file: .github/release-please-config.json
+          release-type: node
+
+      - name: Build artifacts
+        if: steps.release.outputs.release_created == 'true'
+        run: |
+          zip -r artifacts-server.zip server
+          zip -r artifacts-otp-client.zip packages/otp-client
+
+      - name: Upload GitHub release assets
+        if: steps.release.outputs.release_created == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.release.outputs.tag_name }}
+          files: |
+            artifacts-server.zip
+            artifacts-otp-client.zip
+          prerelease: ${{ contains(steps.release.outputs.tag_name, '-beta') }}
+          name: Release ${{ steps.release.outputs.tag_name }}
+          body: ${{ steps.release.outputs.release_notes }}
+
+      # npm publish intentionally disabled for private package

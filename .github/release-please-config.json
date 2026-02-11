@@ -1,0 +1,14 @@
+{
+  "release-type": "node",
+  "packages": {
+    "server": {
+      "component": "server",
+      "path": "server"
+    },
+    "packages/otp-client": {
+      "component": "otp-client",
+      "path": "packages/otp-client"
+    }
+  },
+  "changelog-path": "CHANGELOG.md"
+}

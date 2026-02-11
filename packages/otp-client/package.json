@@ -1,12 +1,12 @@
 {
-  "name": "@otp/otp-client",
-  "version": "0.1.0",
+  "name": "@traisetech/otp-client",
+  "version": "0.1.1",
   "description": "Universal OTP client for React, Expo, Web, and Node",
   "main": "src/index.js",
   "types": "src/index.d.ts",
   "sideEffects": false,
-  "license": "UNLICENSED",
-  "private": false,
+  "license": "MIT",
+  "private": true,
   "files": [
     "src"
   ],
