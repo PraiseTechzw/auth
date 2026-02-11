@@ -1,121 +1,100 @@
-# OTP Verification App + Backend
+# Auth: OTP Verification Backend and Client
 
-A production-ready OTP verification system with:
-- React Native (Expo) client in `app-expo`
-- Node.js/Express backend in `server`
-- SMS POP integration for delivering OTP codes
-- Ngrok tunneling for device connectivity
-- Dry-run testing mode with runtime toggle
+Production-ready OTP verification with:
+- Node.js/Express backend in server
+- Universal client in packages/otp-client
+- SMS POP integration for OTP delivery
+- Dry-run testing mode toggleable at runtime
 
 ## Prerequisites
-- Node.js 20+ and npm
-- Expo Go on your phone
-- Ngrok with authtoken
-- SMS POP account with an approved Sender ID and API token
+- Node.js 18+ and npm
+- Optional: Ngrok for device connectivity during development
+- SMS POP account with approved Sender ID and API token
 
-## Quick Start
+## Installation
 - Backend
-  - Create `server/.env`:
+  - Create server/.env based on [server/.env.example](file:///c:/Users/Prais/projects/auth/server/.env.example)
     - PORT=3010
     - CORS_ORIGIN=*
     - SMSPOP_TOKEN=<your_token>
-    - SMSPOP_SENDER_ID=<approved_sender_id> (e.g., SMSPoP)
+    - SMSPOP_SENDER_ID=<approved_sender_id>
     - OTP_PEPPER=<random_secret_string>
-    - DRY_RUN_SMS=true|false
+    - DRY_RUN_SMS=true
   - Install and run:
-    - `cd server`
-    - `npm install`
-    - `npm start`
-- Ngrok
-  - `npx ngrok config add-authtoken <your_authtoken>`
-  - `npx ngrok http 3010`
-  - Copy the public URL (e.g., https://xxxx.ngrok-free.dev)
-- App-Expo
-  - `cd app-expo`
-  - `npm install`
-  - Update backend URL if needed: [config.json](file:///c:/Users/Prais/OneDrive/Desktop/auth/app-expo/src/config.json)
-  - `npx expo start --tunnel`
+    - cd server
+    - npm install
+    - npm start
+- Client (optional)
+  - cd packages/otp-client
+  - npm install
+
+## Quick Usage
+- Health check:
+
+```bash
+curl http://localhost:3010/health
+```
+
+- Request OTP:
+
+```bash
+curl -X POST http://localhost:3010/auth/request-otp \
+  -H "Content-Type: application/json" \
+  -d '{"phone":"0786123456"}'
+```
+
+- Verify OTP:
+
+```bash
+curl -X POST http://localhost:3010/auth/verify-otp \
+  -H "Content-Type: application/json" \
+  -d '{"phone":"0786123456","otp":"123456"}'
+```
+
+- Toggle dry-run at runtime:
+
+```bash
+curl -X POST http://localhost:3010/admin/dry-run \
+  -H "Content-Type: application/json" \
+  -d '{"enabled": true}'
+```
 
 ## Configuration
-- Environment variables: [config.js](file:///c:/Users/Prais/OneDrive/Desktop/auth/server/src/config.js)
-  - smsToken: SMSPOP_TOKEN
-  - smsSenderId: SMSPOP_SENDER_ID
-  - otpPepper: OTP_PEPPER
-  - dryRunSms: DRY_RUN_SMS
-  - resendCooldownMs, otpExpireMs, rate-limits
-- Runtime testing toggle (no restart required)
-  - POST `/admin/dry-run` with `{"enabled": true}` or `{"enabled": false}`
-  - Implemented in [admin.js](file:///c:/Users/Prais/OneDrive/Desktop/auth/server/src/routes/admin.js)
+- Environment variables defined in [config.js](file:///c:/Users/Prais/projects/auth/server/src/config.js)
+  - smsToken from SMSPOP_TOKEN
+  - smsSenderId from SMSPOP_SENDER_ID
+  - otpPepper from OTP_PEPPER
+  - dryRunSms from DRY_RUN_SMS
+  - resendCooldownMs, otpExpireMs, rate limits
+- Admin toggle endpoint implemented in [admin.js](file:///c:/Users/Prais/projects/auth/server/src/routes/admin.js)
 
 ## API Reference
-- GET `/health`
-  - 200 `{ ok: true }`
-- POST `/auth/request-otp`
-  - Body: `{ phone: "0786xxxxxx" }`
-  - Normalization (Zimbabwe): 0786… → 263786…
-  - Success: `{ success: true, phone, expireMs, cooldownMs, delivery, debugOtp? }`
-    - `delivery.transport`: `"smspop"` or `"dry_run"`
-    - `debugOtp` present in dry-run for testing
-  - Errors:
-    - `rate_limited` 429
-    - `cooldown` 429
-    - `invalid_sender_id` 422
-    - `validation_failed` 422
-    - `unauthorized` 401
-    - `insufficient_credit` 402
-    - `forbidden` 403
-    - `sms_network` 503
-    - `sms_bad_response` 502
-- POST `/auth/verify-otp`
-  - Body: `{ phone: "0786xxxxxx", otp: "123456" }`
-  - Success: `{ success: true }`
-  - Errors:
-    - `expired` 400
-    - `attempts_exceeded` 429
-    - `not_found` 404
-    - `mismatch` 400
+- Full details in docs/API.md
+- Key server files:
+  - App: [app.js](file:///c:/Users/Prais/projects/auth/server/src/app.js)
+  - Auth routes: [auth.js](file:///c:/Users/Prais/projects/auth/server/src/routes/auth.js)
+  - SMS service: [sms.js](file:///c:/Users/Prais/projects/auth/server/src/services/sms.js)
+  - Phone normalization: [phone.js](file:///c:/Users/Prais/projects/auth/server/src/utils/phone.js)
+  - OTP utilities: [otp.js](file:///c:/Users/Prais/projects/auth/server/src/utils/otp.js)
+  - In-memory store: [memoryStore.js](file:///c:/Users/Prais/projects/auth/server/src/store/memoryStore.js)
 
 ## Testing
-- Testable app export: [app.js](file:///c:/Users/Prais/OneDrive/Desktop/auth/server/src/app.js)
 - Run tests:
-  - `cd server`
-  - `npm test`
-- Tests: [auth.test.js](file:///c:/Users/Prais/OneDrive/Desktop/auth/server/test/auth.test.js)
-  - `/health` ok
-  - `request-otp` (dry-run) returns `debugOtp`
-  - `verify-otp` not_found when none requested
+  - cd server
+  - npm test
+- Example tests in [auth.test.js](file:///c:/Users/Prais/projects/auth/server/test/auth.test.js)
 
-## Implementation Details
-- Phone normalization: [phone.js](file:///c:/Users/Prais/OneDrive/Desktop/auth/server/src/utils/phone.js)
-- OTP generation + hashing: [otp.js](file:///c:/Users/Prais/OneDrive/Desktop/auth/server/src/utils/otp.js)
-- In-memory store with cooldown/rate-limits: [memoryStore.js](file:///c:/Users/Prais/OneDrive/Desktop/auth/server/src/store/memoryStore.js)
-- SMS send + error mapping: [sms.js](file:///c:/Users/Prais/OneDrive/Desktop/auth/server/src/services/sms.js)
-- Routes: [auth.js](file:///c:/Users/Prais/OneDrive/Desktop/auth/server/src/routes/auth.js), [admin.js](file:///c:/Users/Prais/OneDrive/Desktop/auth/server/src/routes/admin.js)
-- App client and URL handling:
-  - [client.js](file:///c:/Users/Prais/OneDrive/Desktop/auth/app-expo/src/api/client.js)
-  - Phone/OTP screens: [PhoneScreen.js](file:///c:/Users/Prais/OneDrive/Desktop/auth/app-expo/src/screens/PhoneScreen.js), [OtpScreen.js](file:///c:/Users/Prais/OneDrive/Desktop/auth/app-expo/src/screens/OtpScreen.js)
+## Architecture
+- See docs/ARCHITECTURE.md for data flow, modules, and design decisions.
 
-## Deployment Notes
-- Use a process manager (pm2/Systemd) to run the backend
-- Set real domain and TLS; replace ngrok when stable
-- Secure environment variables; never commit tokens
-- Monitor logs and add rate-limit shields at the proxy if needed
+## Deployment
+- See docs/DEPLOYMENT.md for procedures in development and production.
 
 ## Troubleshooting
-- Sender ID rejected (422 invalid_sender_id)
-  - Ensure exact approved Sender ID and correct API token/account
-- Unauthorized (401)
-  - Check SMSPOP_TOKEN validity
-- Insufficient credit (402)
-  - Add credits in SMS POP dashboard
-- Account inactive or content rejected (403)
-  - Contact support; adjust message content
-- Network issues (503) or bad response (502)
-  - Retry; check provider status; confirm timeouts
-- Cooldown / rate_limited
-  - Wait for countdown; respected by in-memory store
-- Expo device connectivity
-  - Use tunnel, or set the backend URL in app-expo [config.json](file:///c:/Users/Prais/OneDrive/Desktop/auth/app-expo/src/config.json)
+- See docs/TROUBLESHOOTING.md for common issues and fixes.
+
+## Contributing
+- Please read [CONTRIBUTING.md](file:///c:/Users/Prais/projects/auth/CONTRIBUTING.md) for guidelines on opening issues and PRs, coding standards, and testing.
 
 ## License
-- Private project; adapt as needed for your organization.
+- MIT (or project-specific). Update as appropriate.
