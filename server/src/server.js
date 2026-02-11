@@ -13,7 +13,7 @@ app.get('/health', (req, res) => {
 
 app.use('/auth', authRoutes)
 
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   res.status(500).json({ success: false, error: 'server_error' })
 })
 
