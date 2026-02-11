@@ -10,6 +10,7 @@ pnpm-debug.log*
 .env
 server/.env
 app/.env
+packages/*/.env
 
 # Expo / React Native
 .expo/
@@ -23,6 +24,11 @@ app/.env
 dist/
 build/
 coverage/
+artifacts/
+releases/
+*.tgz
+*.zip
+*.tar.gz
 
 # IDE / OS files
 .vscode/
