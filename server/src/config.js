@@ -13,7 +13,7 @@ const config = {
   maxVerifyAttempts: 5,
   rateLimitWindowMs: 15 * 60 * 1000,
   rateLimitMaxRequests: 5,
-  dryRunSms: (env.DRY_RUN_SMS || 'false').toLowerCase() === 'true',
+  dryRunSms: (env.DRY_RUN_SMS || 'true').toLowerCase() === 'true',
   corsOrigin: env.CORS_ORIGIN || '*'
 }
 
