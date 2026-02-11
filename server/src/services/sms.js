@@ -36,9 +36,16 @@ async function sendOtpSMS(phone, otp) {
   } catch (err) {
     if (err.response) {
       const s = err.response.status
-      console.log('smspop error status', { status: s })
-      const e = new Error('SMSPOP error ' + s)
+      const data = err.response.data
+      console.log('smspop error status', { status: s, body: data })
+      let code = 'sms_error_' + s
+      if (s === 422 && data && typeof data.message === 'string') {
+        if (/Invalid sender ID/i.test(data.message)) code = 'invalid_sender_id'
+        if (/Validation failed/i.test(data.message)) code = 'validation_failed'
+      }
+      const e = new Error(code)
       e.status = s
+      e.body = data
       throw e
     }
     console.log('smspop network error')

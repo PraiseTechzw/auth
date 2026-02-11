@@ -27,19 +27,21 @@ router.post('/request-otp', async (req, res) => {
     setOtp(normalized, otpHash)
     await sendOtpSMS(normalized, otp)
     console.log('request-otp sent', { normalized })
-    return res.json({ success: true, phone: normalized, expireMs: config.otpExpireMs, cooldownMs: config.resendCooldownMs })
+    const payload = { success: true, phone: normalized, expireMs: config.otpExpireMs, cooldownMs: config.resendCooldownMs }
+    if (config.dryRunSms) payload.debugOtp = otp
+    return res.json(payload)
   } catch (e) {
     const status = e.status || 400
     let code = 'bad_request'
     if (status === 401) code = 'unauthorized'
     if (status === 402) code = 'payment_required'
     if (status === 403) code = 'forbidden'
-    if (status === 422) code = 'unprocessable'
+    if (status === 422) code = (e.message && typeof e.message === 'string') ? e.message : 'unprocessable'
     if (status === 500) code = 'server_misconfig'
     if (status === 502) code = 'sms_bad_response'
     if (status === 503) code = 'sms_network'
-    console.log('request-otp error', { status, code })
-    return res.status(status).json({ success: false, error: code })
+    console.log('request-otp error', { status, code, body: e.body })
+    return res.status(status).json({ success: false, error: code, detail: e.body })
   }
 })
 
