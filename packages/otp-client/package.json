@@ -1,7 +1,21 @@
 {
   "name": "@traisetech/otp-client",
   "version": "0.1.1",
-  "description": "Universal OTP client for React, Expo, Web, and Node",
+  "description": "Universal OTP client for React, Expo, Web, and Node with reliable OTP request/verify flows, timeout protection, and JHS integration guidelines.",
+  "keywords": [
+    "otp",
+    "one-time-password",
+    "verification",
+    "2fa",
+    "react-native",
+    "expo",
+    "web",
+    "node",
+    "fetch",
+    "zimbabwe",
+    "jhs",
+    "traisetech"
+  ],
   "main": "src/index.js",
   "types": "src/index.d.ts",
   "sideEffects": false,
@@ -21,5 +35,13 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PraiseTechzw/auth.git"
+  },
+  "homepage": "https://github.com/PraiseTechzw/auth#readme",
+  "bugs": {
+    "url": "https://github.com/PraiseTechzw/auth/issues"
   }
 }

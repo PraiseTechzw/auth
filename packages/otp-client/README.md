@@ -1,53 +1,133 @@
 # @traisetech/otp-client
 
-Universal OTP client usable in React, Expo, Web, and Node.
+Universal OTP client for React, Expo, Web, and Node. Provides a simple, reliable way to request and verify One-Time Passwords against a standardized backend API. Designed to integrate smoothly with JHS projects and frontends.
+
+## Why Use This
+- Solves OTP flows end-to-end without custom fetch glue.
+- Normalizes phone handling and enforces timeouts to avoid hanging requests.
+- Works identically across web, Node, and React Native/Expo.
 
 ## Install
 - `npm install @traisetech/otp-client`
 
-## Configure
-- Option A: Programmatic
-  - `setBaseUrl('https://your-backend.ngrok-free.dev')`
-- Option B: Environment (Node/Web)
-  - `OTP_BASE_URL=https://your-backend.ngrok-free.dev`
-- Optional: Persist base URL
-  - `attachStorage(AsyncStorage)` in React Native / Expo
-
-## Usage
+## Quick Start
 ```js
-import { setBaseUrl, requestOtp, verifyOtp, health } from '@traisetech/otp-client'
-setBaseUrl('https://your-backend.ngrok-free.dev')
-await health()
-const req = await requestOtp('0786123456')
-const ok = await verifyOtp('0786123456', '123456')
+import { setBaseUrl, health, requestOtp, verifyOtp } from '@traisetech/otp-client'
+
+setBaseUrl('https://your-backend.example') // or set OTP_BASE_URL env
+await health() // { ok: true }
+const req = await requestOtp('0786123456') // returns expireMs, cooldownMs, delivery
+const ok = await verifyOtp('0786123456', '123456') // { success: true } or error
 ```
 
-### React / Expo
+## JHS Integration
+- Backend URL management:
+  - Web/Node: set `process.env.OTP_BASE_URL` at build/runtime
+  - React Native/Expo: call `setBaseUrl()` at app init
+- Persist configuration on device:
+  - `attachStorage(AsyncStorage)` to remember base URL across launches
+- UI flow:
+  - Phone screen → call `requestOtp(phone)` → show countdown using `cooldownMs`
+  - OTP screen → call `verifyOtp(phone, otp)` → handle error codes for retries
+- Error handling:
+  - Map returned `error` to user messages (e.g., `cooldown`, `rate_limited`, `mismatch`, `expired`)
+
+## Configuration
+- Programmatic:
+  - `setBaseUrl(url: string)` sets request base URL.
+  - `attachStorage(storage)` persists internal base URL (requires `{ getItem, setItem }`).
+- Environment (Web/Node):
+  - `OTP_BASE_URL=https://your-backend.example`
+- Fetch options:
+  - Optional `{ timeoutMs?: number }` per call to override default timeout.
+
+## API Reference
+- `setBaseUrl(url: string): void`
+  - Sets the base URL used for requests.
+- `getBaseUrl(): Promise<string>`
+  - Returns the effective base URL (storage/env/programmatic).
+- `attachStorage(storage: { getItem, setItem }): void`
+  - Attaches persistent storage for base URL in RN/Expo.
+- `health(opts?): Promise<{ ok: true }>`
+  - GET `/health`
+- `requestOtp(phone: string, opts?): Promise<{ success?: boolean, phone?: string, expireMs?: number, cooldownMs?: number, delivery?: any, debugOtp?: string }>`
+  - POST `/auth/request-otp` with `{ phone }`
+  - `debugOtp` only present if backend dry-run is enabled.
+- `verifyOtp(phone: string, otp: string, opts?): Promise<{ success?: boolean, error?: string, remaining?: number }>`
+  - POST `/auth/verify-otp` with `{ phone, otp }`
+
+## Usage Examples
+### React Native / Expo
 ```js
 import { attachStorage, setBaseUrl, requestOtp, verifyOtp } from '@traisetech/otp-client'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+
 attachStorage(AsyncStorage)
-setBaseUrl('https://your-backend.ngrok-free.dev')
+setBaseUrl('https://your-backend.example')
+
+export async function onRequest(phone) {
+  const r = await requestOtp(phone)
+  if (!r.success) throw new Error(r.error || 'request_failed')
+  return r
+}
+
+export async function onVerify(phone, otp) {
+  const r = await verifyOtp(phone, otp)
+  if (!r.success) throw new Error(r.error || 'verify_failed')
+  return r
+}
 ```
 
-### Node
+### Web / Node with Environment
 ```js
+process.env.OTP_BASE_URL = 'https://your-backend.example'
 const { requestOtp, verifyOtp } = require('@traisetech/otp-client')
-process.env.OTP_BASE_URL = 'https://your-backend.ngrok-free.dev'
+
+async function flow() {
+  await requestOtp('0786123456')
+  await verifyOtp('0786123456', '123456')
+}
 ```
 
-## API
-- `setBaseUrl(url)` sets backend base URL
-- `getBaseUrl()` retrieves current base URL
-- `attachStorage(storage)` optional storage with `getItem`/`setItem`
-- `health()` → `{ ok: true }`
-- `requestOtp(phone)` → `{ success, phone, delivery, debugOtp? }`
-- `verifyOtp(phone, otp)` → `{ success } | { success:false, error }`
+### Advanced: Custom Timeout & Storage
+```js
+import { attachStorage, setBaseUrl, requestOtp } from '@traisetech/otp-client'
+
+attachStorage({
+  async getItem(k) { return localStorage.getItem(k) || undefined },
+  async setItem(k, v) { localStorage.setItem(k, v) }
+})
+
+setBaseUrl('https://your-backend.example')
+await requestOtp('0786123456', { timeoutMs: 15000 })
+```
+
+## Best Practices
+- Always set a stable base URL at app startup.
+- Surface cooldown and expiry timers to users for a better UX.
+- Do not log OTP values; use backend dry-run for debug only.
+- Handle error codes explicitly and guide users to retry or wait.
+
+## Troubleshooting
+- `rate_limited` / `cooldown`
+  - Wait for the countdown; avoid repeated requests.
+- `invalid_sender_id` / `unauthorized`
+  - Backend environment variables misconfigured; fix server-side.
+- `mismatch`
+  - Wrong OTP; display remaining attempts and allow retry.
+- `expired`
+  - OTP timed out; re-request a new OTP.
+- Network timeouts
+  - Increase `timeoutMs` or check backend connectivity.
 
 ## Notes
-- Uses native `fetch` (Node 18+ and browsers/React Native)
-- Includes 10s timeout via `AbortController`
-- No dependencies; tree-shakeable
+- Uses native `fetch` (Node 18+ and modern browsers/React Native).
+- Includes timeout via AbortController; configurable per request.
+- Zero runtime dependencies; tree-shakeable for web builds.
 
-## Publish
-- Public npm package. Publishing is handled via CI on tagged releases.
+## Security
+- Never store or log OTP values on the client.
+- Prefer HTTPS and secure environments for OTP flows.
+
+## License
+- MIT
